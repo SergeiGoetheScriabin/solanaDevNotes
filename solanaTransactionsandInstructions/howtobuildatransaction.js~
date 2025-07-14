@@ -1,0 +1,35 @@
+import {
+    LAMPORTS_PER_SOL,
+    SystemProgram,
+    Transaction,
+    Keypair,
+    Connection
+} from "@solana/web3.js";
+
+
+const connection = new Connection("http://localhost:8899", "confirmed");
+const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+
+
+const sender = Keypair.generate(); // make keypair for sender
+const recipient = new Keypair(); // make keypair for recipient
+
+const transferAmount = 0.01 // 0.01 SOL
+
+const transferInstruction = SystemProgram.transfer({
+    fromPubkey: sender.publicKey,
+    toPubkey: recipient.publicKey,
+    lamports: transferAmount * LAMPORTS_PER_SOL
+});
+
+
+const transaction = new Transaction({
+  blockhash,
+  lastValidBlockHeight,
+  feePayer: sender.publicKey
+}).add(transferInstruction);
+transaction.sign(sender);
+
+
+const compiledMessage = transaction.compileMessage();
+console.log(JSON.stringify(compiledMessage, null, 2));
